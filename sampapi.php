@@ -51,6 +51,10 @@
                 $this->createPacket(PACKET_TYPE::SERVER_INFO);
                 $this->send();
                 $this->readPacket();
+
+                $this->createPacket(PACKET_TYPE::SERVER_RULES);
+                $this->send();
+                $this->readPacket();
                 return 1;
             }
         }
@@ -175,6 +179,27 @@
                 }
 
                 case PACKET_TYPE::SERVER_RULES: {
+                    $this->mDataArray['rule_count'] = unpack("cchars", $this->mDataRecive[0]) + unpack("cchars", $this->mDataRecive[1]);
+                    
+                    $this->mDataArray['rule'] = array();
+                    $this->mDataArray['rule']['length'] = unpack("cchars", $this->mDataRecive[2]);
+                    $this->mDataArray['rule']['rulename'] ="";
+                    for($y = 1; $y <= implode("",$this->mDataArray['rule']['length']); $y++) {
+                        if($y == 1)
+                            $this->mDataArray['rule']['rulename'] .= implode("", unpack("a", $this->mDataRecive[$y + 2]));
+                        else
+                            $this->mDataArray['rule']['rulename'] .= "".implode("", unpack("a", $this->mDataRecive[$y + 2]));
+                    }
+                        
+                    $this->mDataArray['rule']['rule_value_length'] = unpack("cchars", $this->mDataRecive[intval(implode("", $this->mDataArray['rule']['length'])) + 3]);
+                    $this->mDataArray['rule']['rule_value'] = "";
+                    for($y = 1; $y <= implode("", $this->mDataArray['rule']['rule_value_length']); $y++) {
+                        if($y == 1)
+                            $this->mDataArray['rule']['rule_value'] .= implode("", unpack("a", $this->mDataRecive[intval(implode("", $this->mDataArray['rule']['length'])) + $y + 3]));
+                        else
+                            $this->mDataArray['rule']['rule_value'] .= "".implode("", unpack("a", $this->mDataRecive[intval(implode("", $this->mDataArray['rule']['length'])) + $y + 3]));
+                    }
+                        
                     
                     break;
                 }
